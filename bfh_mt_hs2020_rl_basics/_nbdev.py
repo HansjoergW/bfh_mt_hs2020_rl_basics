@@ -2,9 +2,12 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"CarEnv": "01_environment.ipynb"}
+index = {"CarEnv": "01_environment.ipynb",
+         "Net": "02_Agent.ipynb",
+         "Agent": "02_Agent.ipynb"}
 
-modules = ["env.py"]
+modules = ["env.py",
+           "agent.py"]
 
 doc_url = "https://HansjoergW.github.io/bfh_mt_hs2020_rl_basics/"
 
