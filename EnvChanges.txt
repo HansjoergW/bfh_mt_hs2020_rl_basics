@@ -1,0 +1,9 @@
+installation of jupyter-debugger plugin in jupyter lab (not the debugger extension)
+  conda install nodejs
+  conda install xeus-python -c conda-forge
+  
+Problems with nbdev, downgraded pip install nbconvert==5.6.1
+ -> https://forums.fast.ai/t/htmlexporter-object-has-no-attribute-template-path/80775/6
+ 
+Git Extension
+ conda install -c conda-forge jupyterlab-git

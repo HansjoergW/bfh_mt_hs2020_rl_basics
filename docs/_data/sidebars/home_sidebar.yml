@@ -10,8 +10,17 @@ entries:
       title: Overview
       url: /
     - output: web,pdf
-      title: module name here
-      url: /core
+      title: Car RL
+      url: Car_RL.html
+    - output: web,pdf
+      title: Environment
+      url: environment.html
+    - output: web,pdf
+      title: Agent
+      url: Agent.html
+    - output: web,pdf
+      title: LoopControl
+      url: LoopControl.html
     output: web
     title: bfh_mt_hs2020_rl_basics
   output: web

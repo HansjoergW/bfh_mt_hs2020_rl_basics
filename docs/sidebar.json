@@ -1,6 +1,9 @@
 {
   "bfh_mt_hs2020_rl_basics": {
     "Overview": "/",
-    "module name here": "/core"
+    "Car RL": "Car_RL.html",
+    "Environment": "environment.html",
+    "Agent": "Agent.html",
+    "LoopControl": "LoopControl.html"
   }
 }
