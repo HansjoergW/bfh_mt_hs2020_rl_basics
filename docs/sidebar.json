@@ -4,6 +4,7 @@
     "Car RL": "Car_RL.html",
     "Environment": "environment.html",
     "Agent": "Agent.html",
+    "Bridge": "Bridge.html",
     "LoopControl": "LoopControl.html"
   }
 }

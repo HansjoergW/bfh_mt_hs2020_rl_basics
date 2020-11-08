@@ -19,6 +19,9 @@ entries:
       title: Agent
       url: Agent.html
     - output: web,pdf
+      title: Bridge
+      url: Bridge.html
+    - output: web,pdf
       title: LoopControl
       url: LoopControl.html
     output: web
