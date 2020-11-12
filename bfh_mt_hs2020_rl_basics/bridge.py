@@ -14,32 +14,50 @@ from ptan.experience import ExperienceFirstLast
 
 import torch
 import torch.nn as nn
+from torch.optim import Optimizer, Adam
 from torch import device
+
 
 class Bridge:
 
-    def __init__(self, agent: Agent, device: device, gamma: float, target_net_sync: int):
+    def __init__(self, agent: Agent, device: device, optimizer: Optimizer = None,
+                 learning_rate: float = 0.0001,
+                 gamma: float = 0.9,
+                 initial_population: int = 1000,
+                 batch_size: int = 32):
+
         self.gamma = gamma
-        self.target_net_sync = target_net_sync
+        self.initial_population = initial_population
+        self.batch_size = batch_size
 
         self.device = device
         self.agent = agent
 
+        if optimizer is not None:
+            self.optimzer = optimizer
+        else:
+            self.optimizer = Adam(self.agent.net.parameters(), lr=learning_rate)
+
+
+    def batch_generator(self):
+        self.agent.buffer.populate(self.initial)
+        while True:
+            self.agent.buffer.populate(1)
+            yield self.agent.buffer.sample(self.batch_size)
+
 
     def process_batch(self, engine:Engine, batch: List[ExperienceFirstLast]):
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
         loss_v = self._calc_loss(batch)
 
         loss_v.backward()
-        optimizer.step()
-        epsilon_tracker.frame(engine.state.iteration)
+        self.optimizer.step()
 
-        if engine.state.iteration % self.target_net_sync == 0:
-            self.tgt_net.sync()
+        self.agent.iteration_completed(engine.state.iteration)
 
         return {
             "loss": loss_v.item(),
-            "epsilon": selector.epsilon,
+            "epsilon": self.agent.selector.epsilon,
         }
 
 
@@ -58,7 +76,7 @@ class Bridge:
         state_action_vals = state_action_vals.squeeze(-1)
 
         with torch.no_grad():
-            next_state_vals            = self.agent.tgt_net(next_states_v).max(1)[0]
+            next_state_vals            = self.agent.tgt_net.target_model(next_states_v).max(1)[0]
             next_state_vals[done_mask] = 0.0
 
         bellman_vals = next_state_vals.detach() * self.gamma + rewards_v

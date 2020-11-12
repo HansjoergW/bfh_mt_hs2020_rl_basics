@@ -40,7 +40,7 @@ nb_path: "03_Bridge.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Bridge" class="doc_header"><code>class</code> <code>Bridge</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/bridge.py#L19" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Bridge</code>(<strong><code>agent</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/Agent.html#Agent"><code>Agent</code></a>, <strong><code>device</code></strong>:<code>device</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>)</p>
+<h2 id="Bridge" class="doc_header"><code>class</code> <code>Bridge</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/bridge.py#L21" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Bridge</code>(<strong><code>agent</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/Agent.html#Agent"><code>Agent</code></a>, <strong><code>device</code></strong>:<code>device</code>, <strong><code>optimizer</code></strong>:<code>Optimizer</code>=<em><code>None</code></em>, <strong><code>learning_rate</code></strong>:<code>float</code>=<em><code>0.0001</code></em>, <strong><code>gamma</code></strong>:<code>float</code>=<em><code>0.9</code></em>, <strong><code>initial_population</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>batch_size</code></strong>:<code>int</code>=<em><code>32</code></em>)</p>
 </blockquote>
 
 </div>
@@ -72,8 +72,8 @@ nb_path: "03_Bridge.ipynb"
 
 <span class="k">def</span> <span class="nf">basic_init</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Bridge</span><span class="p">:</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
-    <span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">),</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">bridge</span>
 </pre></div>
@@ -94,8 +94,8 @@ nb_path: "03_Bridge.ipynb"
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">simple_experiences</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ExperienceFirstLast</span><span class="p">]:</span>
     <span class="k">return</span> <span class="p">[</span>
-        <span class="n">ExperienceFirstLast</span><span class="p">([],</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">[]),</span>
-        <span class="n">ExperienceFirstLast</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>        
+        <span class="n">ExperienceFirstLast</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)),</span>
+        <span class="n">ExperienceFirstLast</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mf">2.0</span><span class="p">,</span>  <span class="kc">None</span><span class="p">)</span>        
     <span class="p">]</span>
 </pre></div>
 
@@ -173,108 +173,16 @@ nb_path: "03_Bridge.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_unpack</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">ignite.engine</span> <span class="kn">import</span> <span class="n">Engine</span>
+
+<span class="k">def</span> <span class="nf">test_process_batch</span><span class="p">():</span>
+    <span class="n">bridge</span> <span class="o">=</span> <span class="n">basic_init</span><span class="p">()</span>
+    <span class="n">batch</span> <span class="o">=</span> <span class="n">simple_experiences</span><span class="p">()</span>
+    <span class="n">bridge</span><span class="o">.</span><span class="n">process_batch</span><span class="p">(</span><span class="n">Engine</span><span class="p">(</span><span class="n">bridge</span><span class="o">.</span><span class="n">process_batch</span><span class="p">),</span> <span class="n">batch</span><span class="p">)</span>
+    <span class="c1"># todo -Checks</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_calc_loss</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">RuntimeError</span>                              Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-40-5c198ee60d89&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 1</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>test_calc_loss<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-38-420fdce2fb6d&gt;</span> in <span class="ansi-cyan-fg">test_calc_loss</span><span class="ansi-blue-intense-fg ansi-bold">()</span>
-<span class="ansi-green-fg">      2</span>     bridge <span class="ansi-yellow-intense-fg ansi-bold">=</span> basic_init<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      3</span>     batch <span class="ansi-yellow-intense-fg ansi-bold">=</span> simple_experiences<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 4</span><span class="ansi-yellow-intense-fg ansi-bold">     </span>loss <span class="ansi-yellow-intense-fg ansi-bold">=</span> bridge<span class="ansi-yellow-intense-fg ansi-bold">.</span>_calc_loss<span class="ansi-yellow-intense-fg ansi-bold">(</span>batch<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      5</span>     <span class="ansi-red-intense-fg ansi-bold"># todo -Checks</span>
-
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-27-6838045d622d&gt;</span> in <span class="ansi-cyan-fg">_calc_loss</span><span class="ansi-blue-intense-fg ansi-bold">(self, batch)</span>
-<span class="ansi-green-fg">     51</span> 
-<span class="ansi-green-fg">     52</span>         actions_v         <span class="ansi-yellow-intense-fg ansi-bold">=</span> actions_v<span class="ansi-yellow-intense-fg ansi-bold">.</span>unsqueeze<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">-</span><span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 53</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>state_action_vals <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>agent<span class="ansi-yellow-intense-fg ansi-bold">.</span>net<span class="ansi-yellow-intense-fg ansi-bold">(</span>states_v<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>gather<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> actions_v<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     54</span>         state_action_vals <span class="ansi-yellow-intense-fg ansi-bold">=</span> state_action_vals<span class="ansi-yellow-intense-fg ansi-bold">.</span>squeeze<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">-</span><span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     55</span> 
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_call_impl</span><span class="ansi-blue-intense-fg ansi-bold">(self, *input, **kwargs)</span>
-<span class="ansi-green-fg">    720</span>             result <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_slow_forward<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    721</span>         <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 722</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>result <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>forward<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    723</span>         for hook in itertools.chain(
-<span class="ansi-green-fg">    724</span>                 _global_forward_hooks<span class="ansi-yellow-intense-fg ansi-bold">.</span>values<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\agent.py</span> in <span class="ansi-cyan-fg">forward</span><span class="ansi-blue-intense-fg ansi-bold">(self, x)</span>
-<span class="ansi-green-fg">     16</span> 
-<span class="ansi-green-fg">     17</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> forward<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> x<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 18</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>net<span class="ansi-yellow-intense-fg ansi-bold">(</span>x<span class="ansi-yellow-intense-fg ansi-bold">.</span>float<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     19</span> 
-<span class="ansi-green-fg">     20</span> <span class="ansi-red-intense-fg ansi-bold"># Cell</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_call_impl</span><span class="ansi-blue-intense-fg ansi-bold">(self, *input, **kwargs)</span>
-<span class="ansi-green-fg">    720</span>             result <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_slow_forward<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    721</span>         <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 722</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>result <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>forward<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    723</span>         for hook in itertools.chain(
-<span class="ansi-green-fg">    724</span>                 _global_forward_hooks<span class="ansi-yellow-intense-fg ansi-bold">.</span>values<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\container.py</span> in <span class="ansi-cyan-fg">forward</span><span class="ansi-blue-intense-fg ansi-bold">(self, input)</span>
-<span class="ansi-green-fg">    115</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> forward<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> input<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    116</span>         <span class="ansi-green-intense-fg ansi-bold">for</span> module <span class="ansi-green-intense-fg ansi-bold">in</span> self<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 117</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>input <span class="ansi-yellow-intense-fg ansi-bold">=</span> module<span class="ansi-yellow-intense-fg ansi-bold">(</span>input<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    118</span>         <span class="ansi-green-intense-fg ansi-bold">return</span> input
-<span class="ansi-green-fg">    119</span> 
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_call_impl</span><span class="ansi-blue-intense-fg ansi-bold">(self, *input, **kwargs)</span>
-<span class="ansi-green-fg">    720</span>             result <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_slow_forward<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    721</span>         <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 722</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>result <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>forward<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    723</span>         for hook in itertools.chain(
-<span class="ansi-green-fg">    724</span>                 _global_forward_hooks<span class="ansi-yellow-intense-fg ansi-bold">.</span>values<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\linear.py</span> in <span class="ansi-cyan-fg">forward</span><span class="ansi-blue-intense-fg ansi-bold">(self, input)</span>
-<span class="ansi-green-fg">     89</span> 
-<span class="ansi-green-fg">     90</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> forward<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> input<span class="ansi-yellow-intense-fg ansi-bold">:</span> Tensor<span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">-&gt;</span> Tensor<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 91</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> F<span class="ansi-yellow-intense-fg ansi-bold">.</span>linear<span class="ansi-yellow-intense-fg ansi-bold">(</span>input<span class="ansi-yellow-intense-fg ansi-bold">,</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>weight<span class="ansi-yellow-intense-fg ansi-bold">,</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>bias<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     92</span> 
-<span class="ansi-green-fg">     93</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> extra_repr<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">-&gt;</span> str<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\functional.py</span> in <span class="ansi-cyan-fg">linear</span><span class="ansi-blue-intense-fg ansi-bold">(input, weight, bias)</span>
-<span class="ansi-green-fg">   1674</span>         ret <span class="ansi-yellow-intense-fg ansi-bold">=</span> torch<span class="ansi-yellow-intense-fg ansi-bold">.</span>addmm<span class="ansi-yellow-intense-fg ansi-bold">(</span>bias<span class="ansi-yellow-intense-fg ansi-bold">,</span> input<span class="ansi-yellow-intense-fg ansi-bold">,</span> weight<span class="ansi-yellow-intense-fg ansi-bold">.</span>t<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">   1675</span>     <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">-&gt; 1676</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>output <span class="ansi-yellow-intense-fg ansi-bold">=</span> input<span class="ansi-yellow-intense-fg ansi-bold">.</span>matmul<span class="ansi-yellow-intense-fg ansi-bold">(</span>weight<span class="ansi-yellow-intense-fg ansi-bold">.</span>t<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">   1677</span>         <span class="ansi-green-intense-fg ansi-bold">if</span> bias <span class="ansi-green-intense-fg ansi-bold">is</span> <span class="ansi-green-intense-fg ansi-bold">not</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">   1678</span>             output <span class="ansi-yellow-intense-fg ansi-bold">+=</span> bias
-
-<span class="ansi-red-intense-fg ansi-bold">RuntimeError</span>: size mismatch, m1: [1 x 2], m2: [3 x 128] at ..\aten\src\TH/generic/THTensorMath.cpp:41</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -289,6 +197,9 @@ nb_path: "03_Bridge.ipynb"
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_init</span><span class="p">()</span>
+<span class="n">test_unpack</span><span class="p">()</span>
+<span class="n">test_calc_loss</span><span class="p">()</span>
+<span class="n">test_process_batch</span><span class="p">()</span>
 </pre></div>
 
     </div>

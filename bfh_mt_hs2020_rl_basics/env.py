@@ -79,7 +79,7 @@ class CarEnv(gym.Env):
                         ], dtype=np.float32)
 
     def step(self, action):
-        zero_state = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float32)
+        zero_state = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         if self.is_done:
             return zero_state, 0, self.is_done
 

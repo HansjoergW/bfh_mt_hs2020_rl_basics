@@ -42,6 +42,7 @@ nb_path: "00_Car_RL.ipynb"
 <span class="kn">import</span> <span class="nn">gym</span>
 <span class="kn">from</span> <span class="nn">gym.spaces</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Discrete</span><span class="p">,</span> <span class="n">Box</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 </pre></div>
 
     </div>
@@ -59,6 +60,9 @@ nb_path: "00_Car_RL.ipynb"
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">run_example</span><span class="p">():</span>
+    <span class="c1"># get rid of missing metrics warning</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+    
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
     <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
     
