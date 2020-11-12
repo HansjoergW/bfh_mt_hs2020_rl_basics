@@ -46,7 +46,7 @@ class Agent:
 
         self.epsilon_tracker = ptan.actions.EpsilonTracker(selector=self.selector, eps_start=eps_start, eps_final=eps_final, eps_frames=eps_frames)
 
-        self.agent = agent = ptan.agent.DQNAgent(self.net, self.selector, device = device)
+        self.agent = agent = ptan.agent.DQNAgent(self.net, self.selector, device = self.device)
 
         self.exp_source = ptan.experience.ExperienceSourceFirstLast(self.env, self.agent, gamma=gamma)
         self.buffer = ptan.experience.ExperienceReplayBuffer(self.exp_source, buffer_size=buffer_size)
