@@ -114,7 +114,7 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Agent" class="doc_header"><code>class</code> <code>Agent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L28" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Agent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>device</code></strong>:<code>device</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>eps_start</code></strong>:<code>float</code>=<em><code>1.0</code></em>, <strong><code>eps_final</code></strong>:<code>float</code>=<em><code>0.02</code></em>, <strong><code>eps_frames</code></strong>:<code>int</code>=<em><code>100000</code></em>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>)</p>
+<h2 id="Agent" class="doc_header"><code>class</code> <code>Agent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L29" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Agent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>eps_start</code></strong>:<code>float</code>=<em><code>1.0</code></em>, <strong><code>eps_final</code></strong>:<code>float</code>=<em><code>0.02</code></em>, <strong><code>eps_frames</code></strong>:<code>int</code>=<em><code>100000</code></em>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>)</p>
 </blockquote>
 
 </div>
@@ -162,7 +162,7 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_agent</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test cpu&quot;</span><span class="p">)</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -182,7 +182,7 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_agent_cuda</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test cuda&quot;</span><span class="p">)</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
 </pre></div>
 
     </div>

@@ -46,7 +46,10 @@ nb_path: "00_Car_RL.ipynb"
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="n">Adam</span>
 </pre></div>
 
     </div>
@@ -63,11 +66,72 @@ nb_path: "00_Car_RL.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">create_control</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">run_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoopControl</span><span class="p">:</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">HYPERPARAMS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;base_setup&#39;</span><span class="p">:</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="o">**</span><span class="p">{</span>
+            <span class="c1"># agent</span>
+            <span class="s1">&#39;agent_device&#39;</span>                <span class="p">:</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>    <span class="c1"># cpu or cuda</span>
+            <span class="s1">&#39;agent_gamma_exp&#39;</span>             <span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>      <span class="c1"># discount_factor for experience_first_last.. shouldn&#39;t matter since step_size is only 1</span>
+            <span class="s1">&#39;agent_buffer_size&#39;</span>           <span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>     <span class="c1"># size of replay buffer</span>
+            <span class="s1">&#39;agent_eps_start&#39;</span>             <span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>      <span class="c1"># epsilon start</span>
+            <span class="s1">&#39;agent_eps_final&#39;</span>             <span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>     <span class="c1"># epsilon end</span>
+            <span class="s1">&#39;agent_eps_frames&#39;</span>            <span class="p">:</span> <span class="mi">10</span><span class="o">**</span><span class="mi">5</span><span class="p">,</span>    <span class="c1"># epsilon frames -&gt; how many frames until 0.02 should be reached .. decay is linear</span>
+            <span class="s1">&#39;agent_target_net_sync&#39;</span>       <span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>     <span class="c1"># sync TargetNet with weights of DNN every .. iterations</span>
+  
+            <span class="c1"># bridge  </span>
+            <span class="s1">&#39;bridge_optimizer&#39;</span>            <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>     <span class="c1"># Optimizer -&gt; default ist Adam</span>
+            <span class="s1">&#39;bridge_learning_rate&#39;</span>        <span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>   <span class="c1"># learningrate</span>
+            <span class="s1">&#39;bridge_gamma&#39;</span>                <span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>      <span class="c1"># discount_factor for reward</span>
+            <span class="s1">&#39;bridge_initial_population&#39;</span>   <span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>     <span class="c1"># initial number of experiences in buffer</span>
+            <span class="s1">&#39;bridge_batch_size&#39;</span>           <span class="p">:</span> <span class="mi">32</span><span class="p">,</span>       <span class="c1"># batch_size for training</span>
+  
+            <span class="c1"># loop control  </span>
+            <span class="s1">&#39;loop_run_name&#39;</span>               <span class="p">:</span> <span class="s2">&quot;base&quot;</span><span class="p">,</span>   <span class="c1"># runname for logfile</span>
+            <span class="s1">&#39;loop_bound_avg_reward&#39;</span>       <span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>   <span class="c1"># target avg reward</span>
+            <span class="s1">&#39;loop_logtb&#39;</span>                  <span class="p">:</span> <span class="kc">True</span><span class="p">,</span>     <span class="c1"># Log to Tensorboard Logfile</span>
+    <span class="p">})</span>
+<span class="p">}</span>
+    
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">create_control</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">SimpleNamespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoopControl</span><span class="p">:</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-    <span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">)</span>
-    <span class="n">control</span> <span class="o">=</span> <span class="n">LoopControl</span><span class="p">(</span><span class="n">bridge</span><span class="o">=</span><span class="n">bridge</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="n">run_name</span><span class="p">)</span>
+    
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">devicestr</span>       <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_device</span><span class="p">,</span> 
+                       <span class="n">gamma</span>           <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_gamma_exp</span><span class="p">,</span> 
+                       <span class="n">buffer_size</span>     <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_buffer_size</span><span class="p">,</span>
+                       <span class="n">eps_start</span>       <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_eps_start</span><span class="p">,</span>
+                       <span class="n">eps_final</span>       <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_eps_final</span><span class="p">,</span>
+                       <span class="n">eps_frames</span>      <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_eps_frames</span><span class="p">,</span>
+                       <span class="n">target_net_sync</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">agent_target_net_sync</span><span class="p">)</span>
+    
+    <span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">,</span>
+                    <span class="n">optimizer</span>          <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">bridge_optimizer</span><span class="p">,</span>
+                    <span class="n">learning_rate</span>      <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">bridge_learning_rate</span><span class="p">,</span>
+                    <span class="n">gamma</span>              <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">bridge_gamma</span><span class="p">,</span>
+                    <span class="n">initial_population</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">bridge_initial_population</span><span class="p">,</span>
+                    <span class="n">batch_size</span>         <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">bridge_batch_size</span><span class="p">,</span>
+                   <span class="p">)</span>
+    
+    <span class="n">control</span> <span class="o">=</span> <span class="n">LoopControl</span><span class="p">(</span>
+                   <span class="n">bridge</span>              <span class="o">=</span> <span class="n">bridge</span><span class="p">,</span> 
+                   <span class="n">run_name</span>            <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">loop_run_name</span><span class="p">,</span> 
+                   <span class="n">bound_avg_reward</span>    <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">loop_bound_avg_reward</span><span class="p">,</span>
+                   <span class="n">logtb</span>               <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">loop_logtb</span><span class="p">)</span>
+    
     <span class="k">return</span> <span class="n">control</span>
 </pre></div>
 
@@ -85,11 +149,11 @@ nb_path: "00_Car_RL.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">run_example</span><span class="p">():</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">run_example</span><span class="p">(</span><span class="n">config_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="c1"># get rid of missing metrics warning</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
     
-    <span class="n">control</span> <span class="o">=</span> <span class="n">create_control</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="s2">&quot;Demo&quot;</span><span class="p">)</span>
+    <span class="n">control</span> <span class="o">=</span> <span class="n">create_control</span><span class="p">(</span><span class="n">HYPERPARAMS</span><span class="p">[</span><span class="n">config_name</span><span class="p">])</span>
     <span class="n">control</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 
@@ -107,7 +171,7 @@ nb_path: "00_Car_RL.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">run_example</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">run_example</span><span class="p">(</span><span class="s1">&#39;base_setup&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -119,163 +183,136 @@ nb_path: "00_Car_RL.ipynb"
 
 <div class="output_area">
 
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Current run is terminating due to exception: to() received an invalid combination of arguments - got (type), but expected one of:
+ * (torch.device device, torch.dtype dtype, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+ * (torch.dtype dtype, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+ * (Tensor tensor, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+.
+Engine run is terminating due to exception: to() received an invalid combination of arguments - got (type), but expected one of:
+ * (torch.device device, torch.dtype dtype, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+ * (torch.dtype dtype, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+ * (Tensor tensor, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">RuntimeError</span>                              Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-23-74f950931a63&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 1</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>run_example<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-47-04ad486e06ab&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 1</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>run_example<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#39;base_setup&#39;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-22-772442a43a54&gt;</span> in <span class="ansi-cyan-fg">run_example</span><span class="ansi-blue-intense-fg ansi-bold">()</span>
-<span class="ansi-green-fg">      3</span>     warnings<span class="ansi-yellow-intense-fg ansi-bold">.</span>simplefilter<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;ignore&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> category<span class="ansi-yellow-intense-fg ansi-bold">=</span>UserWarning<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-46-1a6fd4ec1866&gt;</span> in <span class="ansi-cyan-fg">run_example</span><span class="ansi-blue-intense-fg ansi-bold">(config_name)</span>
 <span class="ansi-green-fg">      4</span> 
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 5</span><span class="ansi-yellow-intense-fg ansi-bold">     </span>control <span class="ansi-yellow-intense-fg ansi-bold">=</span> create_control<span class="ansi-yellow-intense-fg ansi-bold">(</span>torch<span class="ansi-yellow-intense-fg ansi-bold">.</span>device<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;cuda&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-blue-intense-fg ansi-bold">&#34;Demo&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      6</span>     control<span class="ansi-yellow-intense-fg ansi-bold">.</span>run<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      5</span>     control <span class="ansi-yellow-intense-fg ansi-bold">=</span> create_control<span class="ansi-yellow-intense-fg ansi-bold">(</span>HYPERPARAMS<span class="ansi-yellow-intense-fg ansi-bold">[</span>config_name<span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 6</span><span class="ansi-yellow-intense-fg ansi-bold">     </span>control<span class="ansi-yellow-intense-fg ansi-bold">.</span>run<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-19-f1bfb2e948b3&gt;</span> in <span class="ansi-cyan-fg">create_control</span><span class="ansi-blue-intense-fg ansi-bold">(device, run_name)</span>
-<span class="ansi-green-fg">      1</span> <span class="ansi-green-intense-fg ansi-bold">def</span> create_control<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> run_name<span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">-&gt;</span> LoopControl<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">      2</span>     env <span class="ansi-yellow-intense-fg ansi-bold">=</span> CarEnv<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 3</span><span class="ansi-yellow-intense-fg ansi-bold">     </span>agent <span class="ansi-yellow-intense-fg ansi-bold">=</span> Agent<span class="ansi-yellow-intense-fg ansi-bold">(</span>env<span class="ansi-yellow-intense-fg ansi-bold">,</span> device <span class="ansi-yellow-intense-fg ansi-bold">=</span> device<span class="ansi-yellow-intense-fg ansi-bold">,</span> gamma<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">0.9</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> buffer_size<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">1000</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      4</span>     bridge <span class="ansi-yellow-intense-fg ansi-bold">=</span> Bridge<span class="ansi-yellow-intense-fg ansi-bold">(</span>agent<span class="ansi-yellow-intense-fg ansi-bold">=</span>agent<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">      5</span>     control <span class="ansi-yellow-intense-fg ansi-bold">=</span> LoopControl<span class="ansi-yellow-intense-fg ansi-bold">(</span>bridge<span class="ansi-yellow-intense-fg ansi-bold">=</span>bridge<span class="ansi-yellow-intense-fg ansi-bold">,</span> run_name<span class="ansi-yellow-intense-fg ansi-bold">=</span>run_name<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\loop.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">     79</span> 
+<span class="ansi-green-fg">     80</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> run<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 81</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>engine<span class="ansi-yellow-intense-fg ansi-bold">.</span>run<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>bridge<span class="ansi-yellow-intense-fg ansi-bold">.</span>batch_generator<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\agent.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-intense-fg ansi-bold">(self, env, device, gamma, buffer_size, eps_start, eps_final, eps_frames, target_net_sync)</span>
-<span class="ansi-green-fg">     35</span>         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>target_net_sync <span class="ansi-yellow-intense-fg ansi-bold">=</span> target_net_sync
-<span class="ansi-green-fg">     36</span> 
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 37</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>net <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_config_net<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     38</span> 
-<span class="ansi-green-fg">     39</span>         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>tgt_net <span class="ansi-yellow-intense-fg ansi-bold">=</span> ptan<span class="ansi-yellow-intense-fg ansi-bold">.</span>agent<span class="ansi-yellow-intense-fg ansi-bold">.</span>TargetNet<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>net<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-intense-fg ansi-bold">(self, data, max_epochs, epoch_length, seed)</span>
+<span class="ansi-green-fg">    689</span> 
+<span class="ansi-green-fg">    690</span>         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>state<span class="ansi-yellow-intense-fg ansi-bold">.</span>dataloader <span class="ansi-yellow-intense-fg ansi-bold">=</span> data
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 691</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_internal_run<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    692</span> 
+<span class="ansi-green-fg">    693</span>     <span class="ansi-yellow-intense-fg ansi-bold">@</span>staticmethod
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\agent.py</span> in <span class="ansi-cyan-fg">_config_net</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
-<span class="ansi-green-fg">     52</span> 
-<span class="ansi-green-fg">     53</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> _config_net<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">-&gt;</span> nn<span class="ansi-yellow-intense-fg ansi-bold">.</span>Module<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 54</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> Net<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>env<span class="ansi-yellow-intense-fg ansi-bold">.</span>observation_space<span class="ansi-yellow-intense-fg ansi-bold">.</span>shape<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-cyan-intense-fg ansi-bold">128</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>env<span class="ansi-yellow-intense-fg ansi-bold">.</span>action_space<span class="ansi-yellow-intense-fg ansi-bold">.</span>n<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>device<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     55</span> 
-<span class="ansi-green-fg">     56</span> 
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">_internal_run</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">    760</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_dataloader_iter <span class="ansi-yellow-intense-fg ansi-bold">=</span> <span class="ansi-green-intense-fg ansi-bold">None</span>
+<span class="ansi-green-fg">    761</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>logger<span class="ansi-yellow-intense-fg ansi-bold">.</span>error<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;Engine run is terminating due to exception: %s.&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> str<span class="ansi-yellow-intense-fg ansi-bold">(</span>e<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 762</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_handle_exception<span class="ansi-yellow-intense-fg ansi-bold">(</span>e<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    763</span> 
+<span class="ansi-green-fg">    764</span>         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_dataloader_iter <span class="ansi-yellow-intense-fg ansi-bold">=</span> <span class="ansi-green-intense-fg ansi-bold">None</span>
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">to</span><span class="ansi-blue-intense-fg ansi-bold">(self, *args, **kwargs)</span>
-<span class="ansi-green-fg">    605</span>             <span class="ansi-green-intense-fg ansi-bold">return</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> dtype <span class="ansi-green-intense-fg ansi-bold">if</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_floating_point<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-green-intense-fg ansi-bold">else</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> non_blocking<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    606</span> 
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 607</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>convert<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    608</span> 
-<span class="ansi-green-fg">    609</span>     def register_backward_hook(
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">_handle_exception</span><span class="ansi-blue-intense-fg ansi-bold">(self, e)</span>
+<span class="ansi-green-fg">    465</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_fire_event<span class="ansi-yellow-intense-fg ansi-bold">(</span>Events<span class="ansi-yellow-intense-fg ansi-bold">.</span>EXCEPTION_RAISED<span class="ansi-yellow-intense-fg ansi-bold">,</span> e<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    466</span>         <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 467</span><span class="ansi-yellow-intense-fg ansi-bold">             </span><span class="ansi-green-intense-fg ansi-bold">raise</span> e
+<span class="ansi-green-fg">    468</span> 
+<span class="ansi-green-fg">    469</span>     <span class="ansi-yellow-intense-fg ansi-bold">@</span>property
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_apply</span><span class="ansi-blue-intense-fg ansi-bold">(self, fn)</span>
-<span class="ansi-green-fg">    352</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> _apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> fn<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    353</span>         <span class="ansi-green-intense-fg ansi-bold">for</span> module <span class="ansi-green-intense-fg ansi-bold">in</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>children<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 354</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>module<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>fn<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    355</span> 
-<span class="ansi-green-fg">    356</span>         <span class="ansi-green-intense-fg ansi-bold">def</span> compute_should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">(</span>tensor<span class="ansi-yellow-intense-fg ansi-bold">,</span> tensor_applied<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">_internal_run</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">    728</span>                     self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_setup_engine<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    729</span> 
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 730</span><span class="ansi-yellow-intense-fg ansi-bold">                 </span>time_taken <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_run_once_on_dataset<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    731</span>                 <span class="ansi-red-intense-fg ansi-bold"># time is available for handlers but must be update after fire</span>
+<span class="ansi-green-fg">    732</span>                 self<span class="ansi-yellow-intense-fg ansi-bold">.</span>state<span class="ansi-yellow-intense-fg ansi-bold">.</span>times<span class="ansi-yellow-intense-fg ansi-bold">[</span>Events<span class="ansi-yellow-intense-fg ansi-bold">.</span>EPOCH_COMPLETED<span class="ansi-yellow-intense-fg ansi-bold">.</span>name<span class="ansi-yellow-intense-fg ansi-bold">]</span> <span class="ansi-yellow-intense-fg ansi-bold">=</span> time_taken
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_apply</span><span class="ansi-blue-intense-fg ansi-bold">(self, fn)</span>
-<span class="ansi-green-fg">    352</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> _apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> fn<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    353</span>         <span class="ansi-green-intense-fg ansi-bold">for</span> module <span class="ansi-green-intense-fg ansi-bold">in</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>children<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 354</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>module<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>fn<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    355</span> 
-<span class="ansi-green-fg">    356</span>         <span class="ansi-green-intense-fg ansi-bold">def</span> compute_should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">(</span>tensor<span class="ansi-yellow-intense-fg ansi-bold">,</span> tensor_applied<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">_run_once_on_dataset</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">    826</span>         <span class="ansi-green-intense-fg ansi-bold">except</span> Exception <span class="ansi-green-intense-fg ansi-bold">as</span> e<span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">    827</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>logger<span class="ansi-yellow-intense-fg ansi-bold">.</span>error<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;Current run is terminating due to exception: %s.&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> str<span class="ansi-yellow-intense-fg ansi-bold">(</span>e<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 828</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_handle_exception<span class="ansi-yellow-intense-fg ansi-bold">(</span>e<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    829</span> 
+<span class="ansi-green-fg">    830</span>         <span class="ansi-green-intense-fg ansi-bold">return</span> time<span class="ansi-yellow-intense-fg ansi-bold">.</span>time<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">-</span> start_time
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_apply</span><span class="ansi-blue-intense-fg ansi-bold">(self, fn)</span>
-<span class="ansi-green-fg">    374</span>                 <span class="ansi-red-intense-fg ansi-bold"># `with torch.no_grad():`</span>
-<span class="ansi-green-fg">    375</span>                 <span class="ansi-green-intense-fg ansi-bold">with</span> torch<span class="ansi-yellow-intense-fg ansi-bold">.</span>no_grad<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 376</span><span class="ansi-yellow-intense-fg ansi-bold">                     </span>param_applied <span class="ansi-yellow-intense-fg ansi-bold">=</span> fn<span class="ansi-yellow-intense-fg ansi-bold">(</span>param<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    377</span>                 should_use_set_data <span class="ansi-yellow-intense-fg ansi-bold">=</span> compute_should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">(</span>param<span class="ansi-yellow-intense-fg ansi-bold">,</span> param_applied<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    378</span>                 <span class="ansi-green-intense-fg ansi-bold">if</span> should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">_handle_exception</span><span class="ansi-blue-intense-fg ansi-bold">(self, e)</span>
+<span class="ansi-green-fg">    465</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_fire_event<span class="ansi-yellow-intense-fg ansi-bold">(</span>Events<span class="ansi-yellow-intense-fg ansi-bold">.</span>EXCEPTION_RAISED<span class="ansi-yellow-intense-fg ansi-bold">,</span> e<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    466</span>         <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 467</span><span class="ansi-yellow-intense-fg ansi-bold">             </span><span class="ansi-green-intense-fg ansi-bold">raise</span> e
+<span class="ansi-green-fg">    468</span> 
+<span class="ansi-green-fg">    469</span>     <span class="ansi-yellow-intense-fg ansi-bold">@</span>property
 
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">convert</span><span class="ansi-blue-intense-fg ansi-bold">(t)</span>
-<span class="ansi-green-fg">    603</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> convert_to_format <span class="ansi-green-intense-fg ansi-bold">is</span> <span class="ansi-green-intense-fg ansi-bold">not</span> <span class="ansi-green-intense-fg ansi-bold">None</span> <span class="ansi-green-intense-fg ansi-bold">and</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>dim<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">==</span> <span class="ansi-cyan-intense-fg ansi-bold">4</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    604</span>                 <span class="ansi-green-intense-fg ansi-bold">return</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> dtype <span class="ansi-green-intense-fg ansi-bold">if</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_floating_point<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-green-intense-fg ansi-bold">else</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> non_blocking<span class="ansi-yellow-intense-fg ansi-bold">,</span> memory_format<span class="ansi-yellow-intense-fg ansi-bold">=</span>convert_to_format<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 605</span><span class="ansi-yellow-intense-fg ansi-bold">             </span><span class="ansi-green-intense-fg ansi-bold">return</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> dtype <span class="ansi-green-intense-fg ansi-bold">if</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_floating_point<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-green-intense-fg ansi-bold">else</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> non_blocking<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    606</span> 
-<span class="ansi-green-fg">    607</span>         <span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>convert<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ignite\engine\engine.py</span> in <span class="ansi-cyan-fg">_run_once_on_dataset</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">    777</span>                     <span class="ansi-green-intense-fg ansi-bold">if</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>last_event_name <span class="ansi-yellow-intense-fg ansi-bold">!=</span> Events<span class="ansi-yellow-intense-fg ansi-bold">.</span>DATALOADER_STOP_ITERATION<span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">    778</span>                         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_fire_event<span class="ansi-yellow-intense-fg ansi-bold">(</span>Events<span class="ansi-yellow-intense-fg ansi-bold">.</span>GET_BATCH_STARTED<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 779</span><span class="ansi-yellow-intense-fg ansi-bold">                     </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>state<span class="ansi-yellow-intense-fg ansi-bold">.</span>batch <span class="ansi-yellow-intense-fg ansi-bold">=</span> next<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_dataloader_iter<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    780</span>                     self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_fire_event<span class="ansi-yellow-intense-fg ansi-bold">(</span>Events<span class="ansi-yellow-intense-fg ansi-bold">.</span>GET_BATCH_COMPLETED<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    781</span>                     iter_counter <span class="ansi-yellow-intense-fg ansi-bold">+=</span> <span class="ansi-cyan-intense-fg ansi-bold">1</span>
 
-<span class="ansi-red-intense-fg ansi-bold">RuntimeError</span>: CUDA error: an illegal memory access was encountered</pre>
-</div>
-</div>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\bridge.py</span> in <span class="ansi-cyan-fg">batch_generator</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">     41</span> 
+<span class="ansi-green-fg">     42</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> batch_generator<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 43</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>agent<span class="ansi-yellow-intense-fg ansi-bold">.</span>buffer<span class="ansi-yellow-intense-fg ansi-bold">.</span>populate<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>initial_population<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     44</span>         <span class="ansi-green-intense-fg ansi-bold">while</span> <span class="ansi-green-intense-fg ansi-bold">True</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">     45</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>agent<span class="ansi-yellow-intense-fg ansi-bold">.</span>buffer<span class="ansi-yellow-intense-fg ansi-bold">.</span>populate<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-</div>
-</div>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ptan-0.6-py3.7.egg\ptan\experience.py</span> in <span class="ansi-cyan-fg">populate</span><span class="ansi-blue-intense-fg ansi-bold">(self, samples)</span>
+<span class="ansi-green-fg">    366</span>         &#34;&#34;&#34;
+<span class="ansi-green-fg">    367</span>         <span class="ansi-green-intense-fg ansi-bold">for</span> _ <span class="ansi-green-intense-fg ansi-bold">in</span> range<span class="ansi-yellow-intense-fg ansi-bold">(</span>samples<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 368</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>entry <span class="ansi-yellow-intense-fg ansi-bold">=</span> next<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>experience_source_iter<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    369</span>             self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_add<span class="ansi-yellow-intense-fg ansi-bold">(</span>entry<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    370</span> 
 
-</div>
-    {% endraw %}
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ptan-0.6-py3.7.egg\ptan\experience.py</span> in <span class="ansi-cyan-fg">__iter__</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">    174</span> 
+<span class="ansi-green-fg">    175</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> __iter__<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 176</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">for</span> exp <span class="ansi-green-intense-fg ansi-bold">in</span> super<span class="ansi-yellow-intense-fg ansi-bold">(</span>ExperienceSourceFirstLast<span class="ansi-yellow-intense-fg ansi-bold">,</span> self<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>__iter__<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">    177</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> exp<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-yellow-intense-fg ansi-bold">-</span><span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>done <span class="ansi-green-intense-fg ansi-bold">and</span> len<span class="ansi-yellow-intense-fg ansi-bold">(</span>exp<span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">&lt;=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>steps<span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">    178</span>                 last_state <span class="ansi-yellow-intense-fg ansi-bold">=</span> <span class="ansi-green-intense-fg ansi-bold">None</span>
 
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ptan-0.6-py3.7.egg\ptan\experience.py</span> in <span class="ansi-cyan-fg">__iter__</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
+<span class="ansi-green-fg">     80</span>                     states_indices<span class="ansi-yellow-intense-fg ansi-bold">.</span>append<span class="ansi-yellow-intense-fg ansi-bold">(</span>idx<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     81</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> states_input<span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 82</span><span class="ansi-yellow-intense-fg ansi-bold">                 </span>states_actions<span class="ansi-yellow-intense-fg ansi-bold">,</span> new_agent_states <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>agent<span class="ansi-yellow-intense-fg ansi-bold">(</span>states_input<span class="ansi-yellow-intense-fg ansi-bold">,</span> agent_states<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     83</span>                 <span class="ansi-green-intense-fg ansi-bold">for</span> idx<span class="ansi-yellow-intense-fg ansi-bold">,</span> action <span class="ansi-green-intense-fg ansi-bold">in</span> enumerate<span class="ansi-yellow-intense-fg ansi-bold">(</span>states_actions<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">     84</span>                     g_idx <span class="ansi-yellow-intense-fg ansi-bold">=</span> states_indices<span class="ansi-yellow-intense-fg ansi-bold">[</span>idx<span class="ansi-yellow-intense-fg ansi-bold">]</span>
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-</pre></div>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\autograd\grad_mode.py</span> in <span class="ansi-cyan-fg">decorate_context</span><span class="ansi-blue-intense-fg ansi-bold">(*args, **kwargs)</span>
+<span class="ansi-green-fg">     13</span>         <span class="ansi-green-intense-fg ansi-bold">def</span> decorate_context<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>args<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-fg">     14</span>             <span class="ansi-green-intense-fg ansi-bold">with</span> self<span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 15</span><span class="ansi-yellow-intense-fg ansi-bold">                 </span><span class="ansi-green-intense-fg ansi-bold">return</span> func<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">*</span>args<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     16</span>         <span class="ansi-green-intense-fg ansi-bold">return</span> decorate_context
+<span class="ansi-green-fg">     17</span> 
 
-    </div>
-</div>
-</div>
+<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\ptan-0.6-py3.7.egg\ptan\agent.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-intense-fg ansi-bold">(self, states, agent_states)</span>
+<span class="ansi-green-fg">     71</span>             states <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>preprocessor<span class="ansi-yellow-intense-fg ansi-bold">(</span>states<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     72</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> torch<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_tensor<span class="ansi-yellow-intense-fg ansi-bold">(</span>states<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 73</span><span class="ansi-yellow-intense-fg ansi-bold">                 </span>states <span class="ansi-yellow-intense-fg ansi-bold">=</span> states<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>device<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     74</span>         q_v <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>dqn_model<span class="ansi-yellow-intense-fg ansi-bold">(</span>states<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     75</span>         q <span class="ansi-yellow-intense-fg ansi-bold">=</span> q_v<span class="ansi-yellow-intense-fg ansi-bold">.</span>data<span class="ansi-yellow-intense-fg ansi-bold">.</span>cpu<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>numpy<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
 
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
-<span class="ansi-red-intense-fg ansi-bold">RuntimeError</span>                              Traceback (most recent call last)
-<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-28-7329dc4603b1&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-<span class="ansi-green-fg">      1</span> env <span class="ansi-yellow-intense-fg ansi-bold">=</span> CarEnv<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">----&gt; 2</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>agent <span class="ansi-yellow-intense-fg ansi-bold">=</span> Agent<span class="ansi-yellow-intense-fg ansi-bold">(</span>env<span class="ansi-yellow-intense-fg ansi-bold">,</span> device <span class="ansi-yellow-intense-fg ansi-bold">=</span> torch<span class="ansi-yellow-intense-fg ansi-bold">.</span>device<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;cuda&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> gamma<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">0.9</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> buffer_size<span class="ansi-yellow-intense-fg ansi-bold">=</span><span class="ansi-cyan-intense-fg ansi-bold">1000</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\agent.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-intense-fg ansi-bold">(self, env, device, gamma, buffer_size, eps_start, eps_final, eps_frames, target_net_sync)</span>
-<span class="ansi-green-fg">     35</span>         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>target_net_sync <span class="ansi-yellow-intense-fg ansi-bold">=</span> target_net_sync
-<span class="ansi-green-fg">     36</span> 
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 37</span><span class="ansi-yellow-intense-fg ansi-bold">         </span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>net <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_config_net<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     38</span> 
-<span class="ansi-green-fg">     39</span>         self<span class="ansi-yellow-intense-fg ansi-bold">.</span>tgt_net <span class="ansi-yellow-intense-fg ansi-bold">=</span> ptan<span class="ansi-yellow-intense-fg ansi-bold">.</span>agent<span class="ansi-yellow-intense-fg ansi-bold">.</span>TargetNet<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>net<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\projects\bfh_mt_hs2020_rl_basics\bfh_mt_hs2020_rl_basics\agent.py</span> in <span class="ansi-cyan-fg">_config_net</span><span class="ansi-blue-intense-fg ansi-bold">(self)</span>
-<span class="ansi-green-fg">     52</span> 
-<span class="ansi-green-fg">     53</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> _config_net<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">-&gt;</span> nn<span class="ansi-yellow-intense-fg ansi-bold">.</span>Module<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">---&gt; 54</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> Net<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>env<span class="ansi-yellow-intense-fg ansi-bold">.</span>observation_space<span class="ansi-yellow-intense-fg ansi-bold">.</span>shape<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-cyan-intense-fg ansi-bold">0</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-cyan-intense-fg ansi-bold">128</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>env<span class="ansi-yellow-intense-fg ansi-bold">.</span>action_space<span class="ansi-yellow-intense-fg ansi-bold">.</span>n<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">.</span>device<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">     55</span> 
-<span class="ansi-green-fg">     56</span> 
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">to</span><span class="ansi-blue-intense-fg ansi-bold">(self, *args, **kwargs)</span>
-<span class="ansi-green-fg">    605</span>             <span class="ansi-green-intense-fg ansi-bold">return</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> dtype <span class="ansi-green-intense-fg ansi-bold">if</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_floating_point<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-green-intense-fg ansi-bold">else</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> non_blocking<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    606</span> 
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 607</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>convert<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    608</span> 
-<span class="ansi-green-fg">    609</span>     def register_backward_hook(
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_apply</span><span class="ansi-blue-intense-fg ansi-bold">(self, fn)</span>
-<span class="ansi-green-fg">    352</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> _apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> fn<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    353</span>         <span class="ansi-green-intense-fg ansi-bold">for</span> module <span class="ansi-green-intense-fg ansi-bold">in</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>children<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 354</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>module<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>fn<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    355</span> 
-<span class="ansi-green-fg">    356</span>         <span class="ansi-green-intense-fg ansi-bold">def</span> compute_should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">(</span>tensor<span class="ansi-yellow-intense-fg ansi-bold">,</span> tensor_applied<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_apply</span><span class="ansi-blue-intense-fg ansi-bold">(self, fn)</span>
-<span class="ansi-green-fg">    352</span>     <span class="ansi-green-intense-fg ansi-bold">def</span> _apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>self<span class="ansi-yellow-intense-fg ansi-bold">,</span> fn<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    353</span>         <span class="ansi-green-intense-fg ansi-bold">for</span> module <span class="ansi-green-intense-fg ansi-bold">in</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>children<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 354</span><span class="ansi-yellow-intense-fg ansi-bold">             </span>module<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>fn<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    355</span> 
-<span class="ansi-green-fg">    356</span>         <span class="ansi-green-intense-fg ansi-bold">def</span> compute_should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">(</span>tensor<span class="ansi-yellow-intense-fg ansi-bold">,</span> tensor_applied<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">_apply</span><span class="ansi-blue-intense-fg ansi-bold">(self, fn)</span>
-<span class="ansi-green-fg">    374</span>                 <span class="ansi-red-intense-fg ansi-bold"># `with torch.no_grad():`</span>
-<span class="ansi-green-fg">    375</span>                 <span class="ansi-green-intense-fg ansi-bold">with</span> torch<span class="ansi-yellow-intense-fg ansi-bold">.</span>no_grad<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 376</span><span class="ansi-yellow-intense-fg ansi-bold">                     </span>param_applied <span class="ansi-yellow-intense-fg ansi-bold">=</span> fn<span class="ansi-yellow-intense-fg ansi-bold">(</span>param<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    377</span>                 should_use_set_data <span class="ansi-yellow-intense-fg ansi-bold">=</span> compute_should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">(</span>param<span class="ansi-yellow-intense-fg ansi-bold">,</span> param_applied<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    378</span>                 <span class="ansi-green-intense-fg ansi-bold">if</span> should_use_set_data<span class="ansi-yellow-intense-fg ansi-bold">:</span>
-
-<span class="ansi-green-intense-fg ansi-bold">C:\ieu\Anaconda3\envs\deep_rl_hands_on\lib\site-packages\torch\nn\modules\module.py</span> in <span class="ansi-cyan-fg">convert</span><span class="ansi-blue-intense-fg ansi-bold">(t)</span>
-<span class="ansi-green-fg">    603</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> convert_to_format <span class="ansi-green-intense-fg ansi-bold">is</span> <span class="ansi-green-intense-fg ansi-bold">not</span> <span class="ansi-green-intense-fg ansi-bold">None</span> <span class="ansi-green-intense-fg ansi-bold">and</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>dim<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-yellow-intense-fg ansi-bold">==</span> <span class="ansi-cyan-intense-fg ansi-bold">4</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
-<span class="ansi-green-fg">    604</span>                 <span class="ansi-green-intense-fg ansi-bold">return</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> dtype <span class="ansi-green-intense-fg ansi-bold">if</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_floating_point<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-green-intense-fg ansi-bold">else</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> non_blocking<span class="ansi-yellow-intense-fg ansi-bold">,</span> memory_format<span class="ansi-yellow-intense-fg ansi-bold">=</span>convert_to_format<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-intense-fg ansi-bold">--&gt; 605</span><span class="ansi-yellow-intense-fg ansi-bold">             </span><span class="ansi-green-intense-fg ansi-bold">return</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>to<span class="ansi-yellow-intense-fg ansi-bold">(</span>device<span class="ansi-yellow-intense-fg ansi-bold">,</span> dtype <span class="ansi-green-intense-fg ansi-bold">if</span> t<span class="ansi-yellow-intense-fg ansi-bold">.</span>is_floating_point<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span> <span class="ansi-green-intense-fg ansi-bold">else</span> <span class="ansi-green-intense-fg ansi-bold">None</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> non_blocking<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-<span class="ansi-green-fg">    606</span> 
-<span class="ansi-green-fg">    607</span>         <span class="ansi-green-intense-fg ansi-bold">return</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>_apply<span class="ansi-yellow-intense-fg ansi-bold">(</span>convert<span class="ansi-yellow-intense-fg ansi-bold">)</span>
-
-<span class="ansi-red-intense-fg ansi-bold">RuntimeError</span>: CUDA error: an illegal memory access was encountered</pre>
+<span class="ansi-red-intense-fg ansi-bold">TypeError</span>: to() received an invalid combination of arguments - got (type), but expected one of:
+ * (torch.device device, torch.dtype dtype, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+ * (torch.dtype dtype, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+ * (Tensor tensor, bool non_blocking, bool copy, *, torch.memory_format memory_format)
+</pre>
 </div>
 </div>
 

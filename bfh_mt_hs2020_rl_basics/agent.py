@@ -23,16 +23,17 @@ from .env import CarEnv
 
 import gym
 import ptan
+import torch
 from torch import device
 
 class Agent:
 
-    def __init__(self, env: CarEnv, device:device,  gamma:float, buffer_size:int,
+    def __init__(self, env: CarEnv, devicestr:str,  gamma:float, buffer_size:int,
                  eps_start:float = 1.0, eps_final:float = 0.02, eps_frames:int = 10**5,
                  target_net_sync:int = 1000):
 
         self.env = env
-        self.device = device
+        self.device = torch.device(devicestr)
         self.target_net_sync = target_net_sync
 
         self.net = self._config_net()

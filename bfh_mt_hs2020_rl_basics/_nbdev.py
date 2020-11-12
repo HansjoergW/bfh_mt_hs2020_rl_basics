@@ -6,6 +6,7 @@ index = {"CarEnv": "01_environment.ipynb",
          "Net": "02_Agent.ipynb",
          "Agent": "02_Agent.ipynb",
          "Bridge": "03_Bridge.ipynb",
+         "TimeHandler": "04_LoopControl.ipynb",
          "LoopControl": "04_LoopControl.ipynb"}
 
 modules = ["env.py",
