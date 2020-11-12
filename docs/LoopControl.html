@@ -74,8 +74,8 @@ nb_path: "04_LoopControl.ipynb"
 
 <span class="k">def</span> <span class="nf">basic_init_bridge</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Bridge</span><span class="p">:</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-    <span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">bridge</span> <span class="o">=</span> <span class="n">Bridge</span><span class="p">(</span><span class="n">agent</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">bridge</span>
 </pre></div>

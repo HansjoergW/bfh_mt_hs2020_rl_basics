@@ -20,7 +20,7 @@ from torch import device
 
 class Bridge:
 
-    def __init__(self, agent: Agent, device: device, optimizer: Optimizer = None,
+    def __init__(self, agent: Agent, optimizer: Optimizer = None,
                  learning_rate: float = 0.0001,
                  gamma: float = 0.9,
                  initial_population: int = 1000,
@@ -30,7 +30,7 @@ class Bridge:
         self.initial_population = initial_population
         self.batch_size = batch_size
 
-        self.device = device
+        self.device = agent.device
         self.agent = agent
 
         if optimizer is not None:

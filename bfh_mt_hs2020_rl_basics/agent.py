@@ -8,6 +8,7 @@ import torch.nn as nn
 class Net(nn.Module):
     def __init__(self, obs_size, hidden_size, n_actions):
         super(Net, self).__init__()
+
         self.net = nn.Sequential(
             nn.Linear(obs_size, hidden_size),
             nn.ReLU(),
@@ -22,12 +23,16 @@ from .env import CarEnv
 
 import gym
 import ptan
+from torch import device
 
 class Agent:
 
-    def __init__(self, env: CarEnv, gamma:float, buffer_size:int, eps_start:float = 1.0, eps_final:float = 0.02, eps_frames:int = 10**5, target_net_sync:int = 1000):
+    def __init__(self, env: CarEnv, device:device,  gamma:float, buffer_size:int,
+                 eps_start:float = 1.0, eps_final:float = 0.02, eps_frames:int = 10**5,
+                 target_net_sync:int = 1000):
 
         self.env = env
+        self.device = device
         self.target_net_sync = target_net_sync
 
         self.net = self._config_net()
@@ -40,14 +45,14 @@ class Agent:
 
         self.epsilon_tracker = ptan.actions.EpsilonTracker(selector=self.selector, eps_start=eps_start, eps_final=eps_final, eps_frames=eps_frames)
 
-        self.agent = agent = ptan.agent.DQNAgent(self.net, self.selector)
+        self.agent = agent = ptan.agent.DQNAgent(self.net, self.selector, device = device)
 
         self.exp_source = ptan.experience.ExperienceSourceFirstLast(self.env, self.agent, gamma=gamma)
         self.buffer = ptan.experience.ExperienceReplayBuffer(self.exp_source, buffer_size=buffer_size)
 
 
     def _config_net(self)-> nn.Module:
-        return Net(self.env.observation_space.shape[0], 128, self.env.action_space.n)
+        return Net(self.env.observation_space.shape[0], 128, self.env.action_space.n).to(self.device)
 
 
     def iteration_completed(self, iteration: int):
