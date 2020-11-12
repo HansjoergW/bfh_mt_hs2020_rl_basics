@@ -196,10 +196,33 @@ nb_path: "03_Bridge.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_batch_generator</span><span class="p">():</span>
+    <span class="c1"># Test Iterator</span>
+    <span class="n">bridge</span> <span class="o">=</span> <span class="n">basic_init</span><span class="p">()</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">bridge</span><span class="o">.</span><span class="n">batch_generator</span><span class="p">()</span>
+    <span class="n">nextbatch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">nextbatch</span><span class="p">)</span> <span class="o">==</span> <span class="mi">32</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_init</span><span class="p">()</span>
 <span class="n">test_unpack</span><span class="p">()</span>
 <span class="n">test_calc_loss</span><span class="p">()</span>
 <span class="n">test_process_batch</span><span class="p">()</span>
+<span class="n">test_batch_generator</span><span class="p">()</span>
 </pre></div>
 
     </div>

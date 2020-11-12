@@ -40,7 +40,7 @@ class Bridge:
 
 
     def batch_generator(self):
-        self.agent.buffer.populate(self.initial)
+        self.agent.buffer.populate(self.initial_population)
         while True:
             self.agent.buffer.populate(1)
             yield self.agent.buffer.sample(self.batch_size)

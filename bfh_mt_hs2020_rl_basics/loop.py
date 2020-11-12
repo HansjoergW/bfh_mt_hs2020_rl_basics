@@ -64,4 +64,4 @@ class LoopControl:
 
 
     def run(self):
-        self.engine.run(self.bridge.bat)
+        self.engine.run(self.bridge.batch_generator())
