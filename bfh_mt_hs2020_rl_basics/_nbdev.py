@@ -3,9 +3,14 @@
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"CarEnv": "01_environment.ipynb",
-         "Net": "02_Agent.ipynb",
-         "Agent": "02_Agent.ipynb",
-         "Bridge": "03_Bridge.ipynb",
+         "AgentBase": "02_Agent.ipynb",
+         "SimpleNet": "02_Agent.ipynb",
+         "SimpleAgent": "02_Agent.ipynb",
+         "DuelingNet": "02_Agent.ipynb",
+         "RainbowAgent": "02_Agent.ipynb",
+         "BridgeBase": "03_Bridge.ipynb",
+         "SimpleBridge": "03_Bridge.ipynb",
+         "RainbowBridge": "03_Bridge.ipynb",
          "TimeHandler": "04_LoopControl.ipynb",
          "LoopControl": "04_LoopControl.ipynb"}
 

@@ -29,6 +29,44 @@ nb_path: "01_environment.ipynb"
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The idea of this environment is to control and make it stop after a defined distance of 1000m. The agent has 4 actions which he can use. These are</p>
+<ul>
+<li>accelrate, which accelerates that car +1m/s until a max velocity of 35 m/s is reached</li>
+<li>break, which slows the car down with 1 m/s, until it stands</li>
+<li>keep velocity</li>
+<li>declutch, which slows the car with 0.1 m/s</li>
+</ul>
+<p>There are the following rewards</p>
+<ul>
+<li>overshoot the distance: -1000 points</li>
+<li>stop in the last meter of the distance: +100 points</li>
+<li>move towards the end: 0 points</li>
+<li>standing still: -1 point</li>
+</ul>
+<p>The environment delivers the following observations</p>
+<ul>
+<li>distance travelled in meters (float)</li>
+<li>distance till the end is reached in meters (float)</li>
+<li>current velocity in m/s (float)</li>
+</ul>
+<p>The agent can execute an action at every second.</p>
+<p>To move the car, energy is used.</p>
+<ul>
+<li>1 energy unit is used to move the car for one second at 10 m/s</li>
+<li>during acceleration, additional energy of 5% of the end velocity is used.. so if the car increases it speed from 9ms to 10ms, 1.05 energy units are consumed</li>
+<li>break and declutch don't use energy</li>
+</ul>
+<p>There are a few options that can be configured</p>
+<ul>
+<li>penalty for using energy -&gt; 1 unit -1 point</li>
+<li>stochastic environment: random value of +/- 20% when accelerate, using breack or declutch</li>
+</ul>
+
+</div>
+</div>
+</div>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -40,7 +78,7 @@ nb_path: "01_environment.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="CarEnv" class="doc_header"><code>class</code> <code>CarEnv</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/env.py#L10" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CarEnv</code>() :: <code>Env</code></p>
+<h2 id="CarEnv" class="doc_header"><code>class</code> <code>CarEnv</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/env.py#L11" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CarEnv</code>(<strong><code>mode_energy_penalty</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_random</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_limit_steps</code></strong>:<code>bool</code>=<em><code>False</code></em>) :: <code>Env</code></p>
 </blockquote>
 <p>Actions:
 0: accelerate
@@ -57,6 +95,14 @@ nb_path: "01_environment.ipynb"
 <li>goal reached      100</li>
 <li>overshoot       -1000</li>
 <li>closer to target    0</li>
+<li>Option: not reaching goal within time -1000</li>
+<li>Option: per used 1 Unit of Energy -1</li>
+</ul>
+<p>Options:</p>
+<ul>
+<li>Penalty for using energy</li>
+<li>Stochastic environment / random environment -&gt; accelaration and deceleration have a random part</li>
+<li>limit then number of possible steps. if target is not reached after a certain amaount of steps,</li>
 </ul>
 
 </div>
@@ -196,7 +242,7 @@ nb_path: "01_environment.ipynb"
     
     
     <span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-    
+
     <span class="k">assert</span> <span class="n">reward</span> <span class="o">==</span> <span class="mi">0</span>
     <span class="k">assert</span> <span class="n">done</span> <span class="o">==</span> <span class="kc">False</span>
     <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.9</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">0.001</span>

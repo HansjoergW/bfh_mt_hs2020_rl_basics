@@ -4,7 +4,7 @@ __all__ = ['TimeHandler', 'LoopControl']
 
 # Cell
 
-from .bridge import Bridge
+from .bridge import BridgeBase
 
 from datetime import timedelta, datetime
 import time
@@ -29,7 +29,7 @@ class TimeHandler:
         engine.state.metrics[self.TIME_PASSED_METRIC] = time.time() - self._started_ts
 
 class LoopControl:
-    def __init__(self, bridge:Bridge, run_name:str, bound_avg_reward:float=1000.0, logtb:bool = False):
+    def __init__(self, bridge:BridgeBase, run_name:str, bound_avg_reward:float=1000.0, logtb:bool = False):
 
         self.bridge = bridge
         self.run_name = run_name

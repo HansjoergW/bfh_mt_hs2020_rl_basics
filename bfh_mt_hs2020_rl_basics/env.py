@@ -6,6 +6,7 @@ __all__ = ['CarEnv']
 import gym
 from gym.spaces import Tuple, Discrete, Box
 import numpy as np
+import random
 
 class CarEnv(gym.Env):
     """
@@ -25,13 +26,22 @@ class CarEnv(gym.Env):
     - goal reached      100
     - overshoot       -1000
     - closer to target    0
+    - Option: not reaching goal within time -1000
+    - Option: per used 1 Unit of Energy -1
 
+    Options:
+    - Penalty for using energy
+    - Stochastic environment / random environment -> accelaration and deceleration have a random part
+    - limit then number of possible steps. if target is not reached after a certain amaount of steps,
     """
-    def __init__(self):
+    def __init__(self, mode_energy_penalty:bool = False, mode_random:bool = False, mode_limit_steps:bool = False):
         super(CarEnv, self).__init__()
 
+        self.mode_energy_penalty = mode_energy_penalty
+        self.mode_random = mode_random
+        self.mode_limit_steps = mode_limit_steps
+
         # define distance
-        # todo: define random distance
         self.distance: float = 1000.0
         self.maxspeed: float = 35.0 # maxspeed 35/ms
         self.velocityenergy_unit: float = 10.0 # 1 second at the speed of velocityenergy_unit uses 1 energy unit
@@ -42,6 +52,7 @@ class CarEnv(gym.Env):
         self.currentvelocity: float = 0.0
         self.usedenergy: float = 0.0
         self.is_done: bool = False
+
 
         # definition of observation value array
         low = np.array([0.0,
@@ -78,6 +89,16 @@ class CarEnv(gym.Env):
                          self.currentvelocity
                         ], dtype=np.float32)
 
+
+    def _set_new_velocity(self, acceleration:float):
+
+        # in case of randommode, accelleration and decelaration have a uniform random part
+        if self.mode_random:
+            acceleration += acceleration * random.uniform(-0.2, +0.2)
+
+        self.currentvelocity = max(0, min(self.maxspeed, self.currentvelocity + acceleration))
+
+
     def step(self, action):
         zero_state = np.array([0.0, 0.0, 0.0], dtype=np.float32)
         if self.is_done:
@@ -91,12 +112,12 @@ class CarEnv(gym.Env):
 
         if action==0:
             # accelerate
-            self.currentvelocity = min(self.maxspeed, self.currentvelocity + 1.0)
+            self._set_new_velocity(1.0)
             energy_for_step = (self.currentvelocity / self.velocityenergy_unit) * (1 + self.accelerationenergy_factor)
 
         if action==1:
             # break
-            self.currentvelocity = max(0.0, self.currentvelocity - 1.0)
+            self._set_new_velocity(-1.0)
             energy_for_step = 0.0 # using the breaks doesn't need energy
 
         if action==2:
@@ -105,8 +126,11 @@ class CarEnv(gym.Env):
 
         if action==3:
             # declutch
-            self.currentvelocity = max(0.0, self.currentvelocity - 0.1)
+            self._set_new_velocity(-0.1)
             energy_for_step = 0.0 # declutch doesn't use energy
+
+        if self.mode_random:
+            self.currentvelocity += self.currentvelocity * random.uniform(-0.2, +0.2)
 
         self.currentposition += self.currentvelocity
         self.step_index      += 1
@@ -118,7 +142,9 @@ class CarEnv(gym.Env):
 
         overshoot = self.currentposition > self.distance
 
-        if overshoot:
+        timeup = self.mode_limit_steps and (self.step_index >= max_timesteps)
+
+        if overshoot or timeup:
             reward = -1000
             self.is_done = True
             return zero_state, reward, self.is_done, {}
@@ -130,5 +156,7 @@ class CarEnv(gym.Env):
 
         if abs(self.currentvelocity - 0.0)<0.00001:
             reward = -1
+        if self.mode_energy_penalty:
+            reward -= self.usedenergy
 
         return self._calculate_state(), reward, self.is_done, {}

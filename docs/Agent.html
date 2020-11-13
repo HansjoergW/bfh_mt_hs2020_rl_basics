@@ -62,7 +62,53 @@ nb_path: "02_Agent.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Net" class="doc_header"><code>class</code> <code>Net</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L8" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Net</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
+<h2 id="AgentBase" class="doc_header"><code>class</code> <code>AgentBase</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L13" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>AgentBase</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>) :: <code>ABC</code></p>
+</blockquote>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Simple-Agent">Simple Agent<a class="anchor-link" href="#Simple-Agent"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The SimpleAgent has no special improvements concering training stability.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="SimpleNet" class="doc_header"><code>class</code> <code>SimpleNet</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L39" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SimpleNet</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
 </blockquote>
 <p>Base class for all neural network modules.</p>
 <p>Your models should also subclass this class.</p>
@@ -114,8 +160,10 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Agent" class="doc_header"><code>class</code> <code>Agent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L29" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Agent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>eps_start</code></strong>:<code>float</code>=<em><code>1.0</code></em>, <strong><code>eps_final</code></strong>:<code>float</code>=<em><code>0.02</code></em>, <strong><code>eps_frames</code></strong>:<code>int</code>=<em><code>100000</code></em>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>)</p>
+<h2 id="SimpleAgent" class="doc_header"><code>class</code> <code>SimpleAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L60" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SimpleAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>eps_start</code></strong>:<code>float</code>=<em><code>1.0</code></em>, <strong><code>eps_final</code></strong>:<code>float</code>=<em><code>0.02</code></em>, <strong><code>eps_frames</code></strong>:<code>int</code>=<em><code>100000</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
 </blockquote>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
 
 </div>
 
@@ -159,10 +207,10 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_agent</span><span class="p">():</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_simpleagent_cpu</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test cpu&quot;</span><span class="p">)</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">SimpleAgent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -179,10 +227,10 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_agent_cuda</span><span class="p">():</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_simpleagent_cuda</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test cuda&quot;</span><span class="p">)</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
-    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">SimpleAgent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -199,7 +247,8 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_agent</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_simpleagent_cpu</span><span class="p">()</span>
+<span class="n">test_simpleagent_cuda</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -213,8 +262,67 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>test cpu
+test cuda
 </pre>
 </div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Rainbow-Agent">Rainbow Agent<a class="anchor-link" href="#Rainbow-Agent"> </a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The RainbowAgent combines several measures that should increase the stability of the training process.</p>
+
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="DuelingNet" class="doc_header"><code>class</code> <code>DuelingNet</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L115" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DuelingNet</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
+</blockquote>
+<p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+
+</div>
+
 </div>
 
 </div>
@@ -226,30 +334,39 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
 
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_agent_cuda</span><span class="p">()</span>
-</pre></div>
+</div>
+    {% endraw %}
 
-    </div>
-</div>
-</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 <div class="output_wrapper">
 <div class="output">
 
 <div class="output_area">
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>test cuda
-</pre>
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="RainbowAgent" class="doc_header"><code>class</code> <code>RainbowAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L145" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RainbowAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>steps_count</code></strong>:<code>int</code>=<em><code>3</code></em>, <strong><code>prio_replay_alpha</code></strong>:<code>float</code>=<em><code>0.6</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
+</blockquote>
+<p>Helper class that provides a standard way to create an ABC using
+inheritance.</p>
+
 </div>
+
 </div>
 
 </div>
 </div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
 
 </div>
     {% endraw %}
