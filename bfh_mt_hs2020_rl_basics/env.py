@@ -20,6 +20,7 @@ class CarEnv(gym.Env):
     1: distance travelled in meters
     2: distance to go in meters
     3: current velocity
+    4: current timestep
 
     Rewards:
     - standing still     -1
@@ -32,14 +33,16 @@ class CarEnv(gym.Env):
     Options:
     - Penalty for using energy
     - Stochastic environment / random environment -> accelaration and deceleration have a random part
-    - limit then number of possible steps. if target is not reached after a certain amaount of steps,
+    - limit then number of possible steps. if target is not reached after a certain amount of steps
+    - penalty of -1 point for every time step that passes
     """
-    def __init__(self, mode_energy_penalty:bool = False, mode_random:bool = False, mode_limit_steps:bool = False):
+    def __init__(self, mode_energy_penalty:bool = False, mode_random:bool = False, mode_limit_steps:bool = False, mode_time_penalty:bool = False):
         super(CarEnv, self).__init__()
 
         self.mode_energy_penalty = mode_energy_penalty
         self.mode_random = mode_random
         self.mode_limit_steps = mode_limit_steps
+        self.mode_time_penalty = mode_time_penalty
 
         # define distance
         self.distance: float = 1000.0
@@ -57,13 +60,15 @@ class CarEnv(gym.Env):
         # definition of observation value array
         low = np.array([0.0,
                         0.0,
+                        0.0,
                         0.0],
                        dtype=np.float32
         )
 
         high = np.array([self.distance,
                          self.distance,
-                         self.maxspeed],
+                         self.maxspeed,
+                        float(2*self.max_timesteps)],
                          dtype=np.float32
         )
 
@@ -86,7 +91,8 @@ class CarEnv(gym.Env):
     def _calculate_state(self):
         return np.array([self.currentposition,
                          self.distance - self.currentposition,
-                         self.currentvelocity
+                         self.currentvelocity,
+                         float(self.step_index)
                         ], dtype=np.float32)
 
 
@@ -142,7 +148,7 @@ class CarEnv(gym.Env):
 
         overshoot = self.currentposition > self.distance
 
-        timeup = self.mode_limit_steps and (self.step_index >= max_timesteps)
+        timeup = self.mode_limit_steps and (self.step_index >= self.max_timesteps)
 
         if overshoot or timeup:
             reward = -1000
@@ -154,8 +160,12 @@ class CarEnv(gym.Env):
             reward = 100
             return zero_state, reward, self.is_done, {}
 
+        if self.mode_time_penalty:
+            reward += -1
+
         if abs(self.currentvelocity - 0.0)<0.00001:
-            reward = -1
+            reward += -1
+
         if self.mode_energy_penalty:
             reward -= self.usedenergy
 

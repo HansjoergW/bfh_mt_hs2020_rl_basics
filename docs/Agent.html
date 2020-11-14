@@ -297,7 +297,33 @@ test cuda
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="DuelingNet" class="doc_header"><code>class</code> <code>DuelingNet</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L115" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DuelingNet</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
+<h2 id="NoisyFactorizedLinear" class="doc_header"><code>class</code> <code>NoisyFactorizedLinear</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L117" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NoisyFactorizedLinear</code>(<strong><code>in_features</code></strong>, <strong><code>out_features</code></strong>, <strong><code>sigma_zero</code></strong>=<em><code>0.4</code></em>, <strong><code>bias</code></strong>=<em><code>True</code></em>) :: <code>Linear</code></p>
+</blockquote>
+<p>NoisyNet layer with factorized gaussian noise</p>
+<p>N.B. nn.Linear already initializes weight and bias to</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="DuelingNet" class="doc_header"><code>class</code> <code>DuelingNet</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L155" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DuelingNet</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
 </blockquote>
 <p>Base class for all neural network modules.</p>
 <p>Your models should also subclass this class.</p>
@@ -349,7 +375,7 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="RainbowAgent" class="doc_header"><code>class</code> <code>RainbowAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L145" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RainbowAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>steps_count</code></strong>:<code>int</code>=<em><code>3</code></em>, <strong><code>prio_replay_alpha</code></strong>:<code>float</code>=<em><code>0.6</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
+<h2 id="RainbowAgent" class="doc_header"><code>class</code> <code>RainbowAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L185" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RainbowAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>steps_count</code></strong>:<code>int</code>=<em><code>3</code></em>, <strong><code>prio_replay_alpha</code></strong>:<code>float</code>=<em><code>0.6</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
 </blockquote>
 <p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
@@ -367,6 +393,57 @@ inheritance.</p>
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_rainbow_simpleagent_cpu</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test cpu&quot;</span><span class="p">)</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">CarEnv</span><span class="p">()</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">RainbowAgent</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">GAMMA</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="n">REPLAY_SIZE</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">test_rainbow_simpleagent_cpu</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>test cpu
+</pre>
+</div>
+</div>
+
+</div>
+</div>
 
 </div>
     {% endraw %}

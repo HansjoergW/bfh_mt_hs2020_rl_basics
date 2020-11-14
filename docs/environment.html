@@ -62,6 +62,8 @@ nb_path: "01_environment.ipynb"
 <ul>
 <li>penalty for using energy -&gt; 1 unit -1 point</li>
 <li>stochastic environment: random value of +/- 20% when accelerate, using breack or declutch</li>
+<li>limit the number of possible steps per episode. if the goal was not reached, -1000 points</li>
+<li>penalty of -1 for every timestep </li>
 </ul>
 
 </div>
@@ -78,7 +80,7 @@ nb_path: "01_environment.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="CarEnv" class="doc_header"><code>class</code> <code>CarEnv</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/env.py#L11" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CarEnv</code>(<strong><code>mode_energy_penalty</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_random</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_limit_steps</code></strong>:<code>bool</code>=<em><code>False</code></em>) :: <code>Env</code></p>
+<h2 id="CarEnv" class="doc_header"><code>class</code> <code>CarEnv</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/env.py#L11" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CarEnv</code>(<strong><code>mode_energy_penalty</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_random</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_limit_steps</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>mode_time_penalty</code></strong>:<code>bool</code>=<em><code>False</code></em>) :: <code>Env</code></p>
 </blockquote>
 <p>Actions:
 0: accelerate
@@ -88,7 +90,8 @@ nb_path: "01_environment.ipynb"
 <p>Observationspace
 1: distance travelled in meters
 2: distance to go in meters
-3: current velocity</p>
+3: current velocity
+4: current timestep</p>
 <p>Rewards:</p>
 <ul>
 <li>standing still     -1</li>
@@ -102,7 +105,8 @@ nb_path: "01_environment.ipynb"
 <ul>
 <li>Penalty for using energy</li>
 <li>Stochastic environment / random environment -&gt; accelaration and deceleration have a random part</li>
-<li>limit then number of possible steps. if target is not reached after a certain amaount of steps,</li>
+<li>limit then number of possible steps. if target is not reached after a certain amount of steps</li>
+<li>penalty of -1 point for every time step that passes</li>
 </ul>
 
 </div>
