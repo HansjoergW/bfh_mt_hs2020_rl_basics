@@ -160,7 +160,7 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="SimpleAgent" class="doc_header"><code>class</code> <code>SimpleAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L60" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SimpleAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>eps_start</code></strong>:<code>float</code>=<em><code>1.0</code></em>, <strong><code>eps_final</code></strong>:<code>float</code>=<em><code>0.02</code></em>, <strong><code>eps_frames</code></strong>:<code>int</code>=<em><code>100000</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
+<h2 id="SimpleAgent" class="doc_header"><code>class</code> <code>SimpleAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L68" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>SimpleAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>eps_start</code></strong>:<code>float</code>=<em><code>1.0</code></em>, <strong><code>eps_final</code></strong>:<code>float</code>=<em><code>0.02</code></em>, <strong><code>eps_frames</code></strong>:<code>int</code>=<em><code>100000</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
 </blockquote>
 <p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
@@ -297,7 +297,7 @@ test cuda
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="NoisyFactorizedLinear" class="doc_header"><code>class</code> <code>NoisyFactorizedLinear</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L117" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NoisyFactorizedLinear</code>(<strong><code>in_features</code></strong>, <strong><code>out_features</code></strong>, <strong><code>sigma_zero</code></strong>=<em><code>0.4</code></em>, <strong><code>bias</code></strong>=<em><code>True</code></em>) :: <code>Linear</code></p>
+<h2 id="NoisyFactorizedLinear" class="doc_header"><code>class</code> <code>NoisyFactorizedLinear</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L128" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>NoisyFactorizedLinear</code>(<strong><code>in_features</code></strong>, <strong><code>out_features</code></strong>, <strong><code>sigma_zero</code></strong>=<em><code>0.4</code></em>, <strong><code>bias</code></strong>=<em><code>True</code></em>) :: <code>Linear</code></p>
 </blockquote>
 <p>NoisyNet layer with factorized gaussian noise</p>
 <p>N.B. nn.Linear already initializes weight and bias to</p>
@@ -323,7 +323,7 @@ test cuda
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="DuelingNet" class="doc_header"><code>class</code> <code>DuelingNet</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L155" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DuelingNet</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
+<h2 id="DuelingNet" class="doc_header"><code>class</code> <code>DuelingNet</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L166" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>DuelingNet</code>(<strong><code>obs_size</code></strong>, <strong><code>hidden_size</code></strong>, <strong><code>n_actions</code></strong>) :: <code>Module</code></p>
 </blockquote>
 <p>Base class for all neural network modules.</p>
 <p>Your models should also subclass this class.</p>
@@ -375,7 +375,7 @@ parameters converted too when you call :meth:<code>to</code>, etc.</p>
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="RainbowAgent" class="doc_header"><code>class</code> <code>RainbowAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L185" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RainbowAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>steps_count</code></strong>:<code>int</code>=<em><code>3</code></em>, <strong><code>prio_replay_alpha</code></strong>:<code>float</code>=<em><code>0.6</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
+<h2 id="RainbowAgent" class="doc_header"><code>class</code> <code>RainbowAgent</code><a href="https://github.com/HansjoergW/bfh_mt_hs2020_rl_basics/tree/master/bfh_mt_hs2020_rl_basics/agent.py#L196" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RainbowAgent</code>(<strong><code>env</code></strong>:<a href="/bfh_mt_hs2020_rl_basics/environment.html#CarEnv"><code>CarEnv</code></a>, <strong><code>devicestr</code></strong>:<code>str</code>, <strong><code>gamma</code></strong>:<code>float</code>, <strong><code>buffer_size</code></strong>:<code>int</code>, <strong><code>target_net_sync</code></strong>:<code>int</code>=<em><code>1000</code></em>, <strong><code>steps_count</code></strong>:<code>int</code>=<em><code>3</code></em>, <strong><code>prio_replay_alpha</code></strong>:<code>float</code>=<em><code>0.6</code></em>) :: <a href="/bfh_mt_hs2020_rl_basics/Agent.html#AgentBase"><code>AgentBase</code></a></p>
 </blockquote>
 <p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>

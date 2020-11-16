@@ -40,8 +40,16 @@ class SimpleNet(nn.Module):
     def __init__(self, obs_size, hidden_size, n_actions):
         super(SimpleNet, self).__init__()
 
+#         self.net = nn.Sequential(
+#             nn.Linear(obs_size, hidden_size),
+#             nn.ReLU(),
+#             nn.Linear(hidden_size, n_actions)
+#         )
+
         self.net = nn.Sequential(
             nn.Linear(obs_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, n_actions)
         )
@@ -72,6 +80,9 @@ class SimpleAgent(AgentBase):
 
         self.target_net_sync = target_net_sync
 
+        self.hiddensize = 128
+        self.hiddensize = 4
+
         self.net = self._config_net()
 
         self.tgt_net = ptan.agent.TargetNet(self.net)
@@ -89,7 +100,7 @@ class SimpleAgent(AgentBase):
 
 
     def _config_net(self)-> nn.Module:
-        return SimpleNet(self.env.observation_space.shape[0], 128, self.env.action_space.n).to(self.device)
+        return SimpleNet(self.env.observation_space.shape[0], self.hiddensize, self.env.action_space.n).to(self.device)
 
 
     def iteration_completed(self, iteration: int):
